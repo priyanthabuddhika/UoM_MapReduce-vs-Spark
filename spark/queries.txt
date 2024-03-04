@@ -1,0 +1,21 @@
+var df = spark.read.format("csv").load("s3://airline-delay-spark-hive-bucket/input/DelayedFlights-updated.csv")
+
+df.show()
+
+df.write.format("parquet").partitionBy("_c1").save("s3://airline-delay-spark-hive-bucket/spark/DelayedFlights-updated-df")
+
+val df2 = spark.read.format("parquet").load("s3://airline-delay-spark-hive-bucket/spark/DelayedFlights-updated-df")
+			
+df2.show()
+
+df2.createOrReplaceTempView("delay_flights")
+
+spark.time(spark.sql("SELECT _c1 as Year, avg((_c25/_c15)*100) as Year_wise_carrier_delay from delay_flights GROUP BY _c1 ORDER BY _c1 DESC").show())
+
+spark.time(spark.sql("SELECT _c1 as Year, avg((_c27/_c15)*100) as Year_wise_nas_delay from delay_flights GROUP BY _c1 ORDER BY _c1 DESC").show())
+
+spark.time(spark.sql("SELECT _c1 as Year, avg((_c26/_c15)*100) as Year_wise_weather_delay from delay_flights GROUP BY _c1 ORDER BY _c1 DESC").show())
+
+spark.time(spark.sql("SELECT _c1 as Year, avg((_c29/_c15)*100) as Year_wise_late_aircraft_delay from delay_flights GROUP BY _c1 ORDER BY _c1 DESC").show())
+
+spark.time(spark.sql("SELECT _c1 as Year, avg((_c28/_c15)*100) as Year_wise_security_delay from delay_flights GROUP BY _c1 ORDER BY _c1 DESC").show())
